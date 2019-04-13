@@ -1,9 +1,14 @@
 package pl.sda.bestwatch;
 
 import org.springframework.web.bind.annotation.*;
+import pl.sda.bestwatch.dto.SuggestionDto;
+import pl.sda.bestwatch.dto.SuggestionDtoConverter;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping(BestwatchController.API_BESTWATCH_PATH)
@@ -20,8 +25,10 @@ public class BestwatchController {
     }
 
     @GetMapping
-    public Iterable<Suggestion> getAllSuggestion() {
-        return suggestionRepository.findAll();
+    public Collection<SuggestionDto> getAllSuggestion() {
+        return suggestionRepository.findAll().stream().map(
+                SuggestionDtoConverter::fromEntity)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
@@ -30,8 +37,8 @@ public class BestwatchController {
     }
 
     @PostMapping
-    public void addSuggestion(@RequestBody Suggestion suggestion, Movie movie, SuggestionAuthor suggestionAuthor) {
-        suggestionRepository.save(suggestion);
+    public void addSuggestion(@RequestBody SuggestionDto suggestion) {
+        suggestionRepository.save(SuggestionDtoConverter.toEntity(suggestion));
     }
 
 }
