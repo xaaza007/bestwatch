@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -30,7 +31,6 @@ public class SuggestionAPITest {
         repository.deleteAll();
     }
 
-
     @Test
     @DisplayName("Można nawiązać połączenie z API")
     void test01() throws Exception {
@@ -43,19 +43,44 @@ public class SuggestionAPITest {
     @Test
     @DisplayName("Wysłanie i odebranie sugestii autora")
     void test02() throws Exception {
-        // @formatter:off
-        String jsonPost = "{" +
-                "\"movieTitle\":\"title\"," +
-                "\"suggestionAuthor\": \"goobar\"," +
-                "\"link\": \"http://imdb.com/title\"" +
-             "}";
-        // @formatter:on
-        mockMvc.perform(post(API_BESTWATCH_PATH).content(jsonPost).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+        // given
+        postSuggestion("title", "goobar", "http://imdb.com/title");
+
+        // when
         mockMvc.perform(get(API_BESTWATCH_PATH))
+
+                // then
                 .andExpect(jsonPath("$[0].movieTitle", is("title")))
                 .andExpect(jsonPath("$[0].suggestionAuthor", is("goobar")))
                 .andExpect(jsonPath("$[0].link", is("http://imdb.com/title")))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Wyszukiwanie sugestii autora")
+    void test03() throws Exception {
+        // given
+        postSuggestion("title0", "goobar", "http://link.com/0");
+        postSuggestion("title1", "foobar", "http://link.com/1");
+        postSuggestion("title2", "goobar", "http://link.com/2");
+
+        // when
+        mockMvc.perform(get(API_BESTWATCH_PATH).param("suggestionAuthor", "goobar"))
+
+                // then
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)));
+    }
+
+    private void postSuggestion(String title, String author, String link) throws Exception {
+        // @formatter:off
+        String jsonPost = "{" +
+                "\"movieTitle\": \"" + title + "\"," +
+                "\"suggestionAuthor\": \"" + author + "\"," +
+                "\"link\": \"" + link + "\"" +
+                "}";
+        // @formatter:on
+        mockMvc.perform(post(API_BESTWATCH_PATH).content(jsonPost).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
