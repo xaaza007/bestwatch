@@ -72,6 +72,23 @@ public class SuggestionAPITest {
                 .andExpect(jsonPath("$", hasSize(2)));
     }
 
+    @Test
+    @DisplayName("Wyszukiwanie sugestii po tytule")
+    void test04() throws Exception {
+        // given
+        postSuggestion("title0", "goobar", "http://link.com/0");
+        postSuggestion("title0", "foobar", "http://link.com/1");
+        postSuggestion("title1", "goobar", "http://link.com/2");
+
+        // when
+        mockMvc.perform(get(API_BESTWATCH_PATH).param("suggestionMovieTitle", "title0"))
+
+                // then
+        .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)));
+    }
+
+
     private void postSuggestion(String title, String author, String link) throws Exception {
         // @formatter:off
         String jsonPost = "{" +

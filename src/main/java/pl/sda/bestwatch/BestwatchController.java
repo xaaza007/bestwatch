@@ -29,6 +29,11 @@ public class BestwatchController {
         return convertToDto(suggestionRepository.findAllBySuggestionAuthorNickName(suggestionAuthor));
     }
 
+    @GetMapping(params = "suggestionMovieTitle")
+    public Collection<SuggestionDto> getSuggestionsByMovie(@RequestParam String suggestionMovieTitle) {
+        return convertToDto(suggestionRepository.findAllByMovieTitle(suggestionMovieTitle));
+    }
+
     @GetMapping("/{id}")
     public Optional<SuggestionDto> getOneSuggestion(@PathVariable Integer id) {
         return suggestionRepository.findById(id).map(SuggestionDtoConverter::fromEntity);
