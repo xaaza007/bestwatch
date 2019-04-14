@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Suggestion Form</title>
+</head>
+<body>
+
+<form method="post" th:action="@{/app/bestwatch/suggestions}">
+    <label>Movie Title</label>
+    <input type="text" name="movie.title" placeholder="Tytuł filmu">
+    <label>Nick name</label>
+    <input type="text" name="suggestionAuthor.nickName" placeholder="Twój nick">
+    <label>Link to movie</label>
+    <input type="text" name="movie.linkToMovie" placeholder="Link do filmu">
+
+    <input type="submit" value="Wyślij">
+</form>
+
+</body>
+</html>
