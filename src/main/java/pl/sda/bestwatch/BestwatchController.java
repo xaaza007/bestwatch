@@ -57,8 +57,10 @@ public class BestwatchController {
 
     private void sendMail(Subscriber subscriber, SuggestionDto suggestion) {
         SimpleMailMessage message = new SimpleMailMessage();
+        message.setSubject("Suggestion");
         message.setTo(subscriber.getEmailAddress());
-        message.setText(suggestion.getMovieTitle() + ", " + suggestion.getLink() + ", " + suggestion.getSuggestionAuthor());
+        message.setText(suggestion.getMovieTitle() + ", " + suggestion.getLink() + ", "
+                + suggestion.getSuggestionAuthor());
         mailSender.send(message);
     }
 
