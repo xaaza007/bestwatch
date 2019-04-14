@@ -1,5 +1,7 @@
 package pl.sda.bestwatch;
 
+import org.springframework.mail.MailSender;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.web.bind.annotation.*;
 import pl.sda.bestwatch.dto.SuggestionDto;
 import pl.sda.bestwatch.dto.SuggestionDtoConverter;
@@ -12,11 +14,18 @@ import java.util.stream.Collectors;
 @RequestMapping(BestwatchController.API_BESTWATCH_PATH)
 public class BestwatchController {
 
-    SuggestionRepository suggestionRepository;
     public static final String API_BESTWATCH_PATH = "/api/bestwatch";
+    private static final boolean SEND_MAIL = false;
 
-    public BestwatchController(SuggestionRepository suggestionRepository) {
+    private SuggestionRepository suggestionRepository;
+    private SubscribersRepository subscribersRepository;
+    private MailSender mailSender;
+
+    public BestwatchController(SuggestionRepository suggestionRepository,
+                               SubscribersRepository subscribersRepository, MailSender mailSender) {
         this.suggestionRepository = suggestionRepository;
+        this.subscribersRepository = subscribersRepository;
+        this.mailSender = mailSender;
     }
 
     @GetMapping
@@ -42,6 +51,15 @@ public class BestwatchController {
     @PostMapping
     public void addSuggestion(@RequestBody SuggestionDto suggestion) {
         suggestionRepository.save(SuggestionDtoConverter.toEntity(suggestion));
+        if (SEND_MAIL)
+            subscribersRepository.findAll().forEach(subscriber -> sendMail(subscriber, suggestion));
+    }
+
+    private void sendMail(Subscriber subscriber, SuggestionDto suggestion) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(subscriber.getEmailAddress());
+        message.setText(suggestion.getMovieTitle() + ", " + suggestion.getLink() + ", " + suggestion.getSuggestionAuthor());
+        mailSender.send(message);
     }
 
     private static Collection<SuggestionDto> convertToDto(final Collection<Suggestion> suggestions) {
