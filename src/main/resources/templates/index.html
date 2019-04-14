@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Bestwatch Movie Suggestions</title>
+</head>
+<body>
+
+<table>
+    <thead>
+    <tr>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Link</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="suggestion: ${allSuggestions}">
+        <td th:text="${suggestion.movie.title}">Title</td>
+        <td th:text="${suggestion.suggestionAuthor.nickName}">Nick Name</td>
+        <td th:text="${suggestion.movie.linkToMovie}">Link to movie</td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
