@@ -19,18 +19,17 @@ public class SuggestionMailSenderEventListener {
 
     @EventListener
     @Async
-    public void sendEmail(SuggestionAdded event) throws InterruptedException {
+    public void sendEmail(SuggestionAdded event) {
         if (SEND_MAIL)
             subscribersRepository.findAll().forEach(subscriber -> sendMail(subscriber, event.getSuggestion()));
     }
-
     private void sendMail(Subscriber subscriber, Suggestion suggestion) {
         Movie movie = suggestion.getMovie();
         SimpleMailMessage message = new SimpleMailMessage();
         message.setSubject("Suggestion");
         message.setTo(subscriber.getEmailAddress());
         message.setText(movie.getTitle() + ", " + movie.getLinkToMovie() + ", "
-                + suggestion.getSuggestionAuthor());
+                + suggestion.getSuggestionAuthor().getNickName());
         mailSender.send(message);
     }
 }

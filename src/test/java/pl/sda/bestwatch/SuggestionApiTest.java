@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @WithMockUser
-public class SuggestionApiTest {
+class SuggestionApiTest {
 
     private static final String API_BESTWATCH_PATH = SuggestionController.API_BESTWATCH_PATH;
 
@@ -129,7 +129,7 @@ public class SuggestionApiTest {
                 .content(addMultipleSuggestionsJson)
                         .contentType(MediaType.APPLICATION_JSON))
 
-                // then
+        // then
         .andExpect(status().isOk());
         mockMvc.perform(get(API_BESTWATCH_PATH)).andExpect(jsonPath("$", hasSize(2)));
     }
