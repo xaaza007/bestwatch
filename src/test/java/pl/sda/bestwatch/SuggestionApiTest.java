@@ -1,5 +1,6 @@
 package pl.sda.bestwatch;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import pl.sda.bestwatch.dto.SuggestionDto;
+
+import java.util.Arrays;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -21,12 +25,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WithMockUser
 public class SuggestionApiTest {
 
-    private static final String API_BESTWATCH_PATH = BestwatchController.API_BESTWATCH_PATH;
+    private static final String API_BESTWATCH_PATH = SuggestionController.API_BESTWATCH_PATH;
 
     @Autowired
     private MockMvc mockMvc;
     @Autowired
     private SuggestionRepository repository;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     void cleanDb() {
@@ -101,6 +107,31 @@ public class SuggestionApiTest {
         // @formatter:on
         mockMvc.perform(post(API_BESTWATCH_PATH).content(jsonPost).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+    }
+    @Test
+    @DisplayName("Dodawanie wielu sugestii za jednym razem")
+    void test05 () throws Exception {
+        // given
+        SuggestionDto firstSuggestion = new SuggestionDto();
+        firstSuggestion.setMovieTitle("movie 0");
+        firstSuggestion.setLink("http://link.com/0");
+        firstSuggestion.setSuggestionAuthor("author");
+        SuggestionDto secondSuggestion = new SuggestionDto();
+        secondSuggestion.setMovieTitle("movie 1");
+        secondSuggestion.setLink("http://link.com/1");
+        secondSuggestion.setSuggestionAuthor("author");
+        AddSuggestionsDto addSuggestionsDto = new AddSuggestionsDto(Arrays.asList(firstSuggestion, secondSuggestion));
+        String addMultipleSuggestionsJson = objectMapper.writeValueAsString(addSuggestionsDto);
+
+        // when
+        mockMvc.perform(
+                post(API_BESTWATCH_PATH + "/many")
+                .content(addMultipleSuggestionsJson)
+                        .contentType(MediaType.APPLICATION_JSON))
+
+                // then
+        .andExpect(status().isOk());
+        mockMvc.perform(get(API_BESTWATCH_PATH)).andExpect(jsonPath("$", hasSize(2)));
     }
 
 //    @Test

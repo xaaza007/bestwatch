@@ -1,11 +1,11 @@
 package pl.sda.bestwatch;
 
-import org.springframework.mail.MailSender;
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import pl.sda.bestwatch.dto.SuggestionDto;
 import pl.sda.bestwatch.dto.SuggestionDtoConverter;
 
+import javax.transaction.Transactional;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -13,17 +13,13 @@ import java.util.stream.Collectors;
 @Service
 public class SuggestionServiceImpl implements SuggestionService {
 
-    private static final boolean SEND_MAIL = false;
     private SuggestionRepository suggestionRepository;
-    private SubscribersRepository subscribersRepository;
-    private MailSender mailSender;
+    private ApplicationEventPublisher eventPublisher;
 
     public SuggestionServiceImpl(SuggestionRepository suggestionRepository,
-                                 SubscribersRepository subscribersRepository,
-                                 MailSender mailSender) {
+                                 ApplicationEventPublisher eventPublisher) {
         this.suggestionRepository = suggestionRepository;
-        this.subscribersRepository = subscribersRepository;
-        this.mailSender = mailSender;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -35,14 +31,11 @@ public class SuggestionServiceImpl implements SuggestionService {
             result.add(SuggestionDtoConverter.fromEntity(sugg));
         }
         return result;*/
-
         return convertSuggestionToDto(suggestionRepository.findAllBySuggestionAuthorNickName(nickName));
-
     }
 
     @Override
     public Collection<SuggestionDto> findAll() {
-
         return convertSuggestionToDto(suggestionRepository.findAll());
     }
 
@@ -58,18 +51,16 @@ public class SuggestionServiceImpl implements SuggestionService {
 
     @Override
     public void addSuggestion(SuggestionDto suggestion) {
-        suggestionRepository.save(SuggestionDtoConverter.toEntity(suggestion));
-        if (SEND_MAIL)
-            subscribersRepository.findAll().forEach(subscriber -> sendMail(subscriber, suggestion));
+        Suggestion addedSuggestion = suggestionRepository.save(SuggestionDtoConverter.toEntity(suggestion));
+        eventPublisher.publishEvent(new SuggestionAdded(addedSuggestion));
     }
 
-    private void sendMail(Subscriber subscriber, SuggestionDto suggestion) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setSubject("Suggestion");
-        message.setTo(subscriber.getEmailAddress());
-        message.setText(suggestion.getMovieTitle() + ", " + suggestion.getLink() + ", "
-                + suggestion.getSuggestionAuthor());
-        mailSender.send(message);
+    @Override
+    @Transactional
+    public void addManySuggestions(AddSuggestionsDto addSuggestionsDto) {
+        for (SuggestionDto suggestionDto : addSuggestionsDto.getSuggestions()) {
+            addSuggestion(suggestionDto);
+        }
     }
 
     private Collection<SuggestionDto> convertSuggestionToDto(Collection<Suggestion> collection) {

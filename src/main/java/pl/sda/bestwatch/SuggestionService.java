@@ -11,5 +11,6 @@ public interface SuggestionService {
     Collection<SuggestionDto> findAllByMovieTitle(String suggestionMovieTitle);
     Optional<SuggestionDto> findById(Integer id);
     void addSuggestion(SuggestionDto suggestion);
+    void addManySuggestions (AddSuggestionsDto addSuggestionsDto);
 
 }

@@ -7,13 +7,13 @@ import java.util.Collection;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(BestwatchController.API_BESTWATCH_PATH)
-public class BestwatchController {
+@RequestMapping(SuggestionController.API_BESTWATCH_PATH)
+public class SuggestionController {
 
     static final String API_BESTWATCH_PATH = "/api/bestwatch";
     private SuggestionService suggestionService;
 
-    public BestwatchController(SuggestionService suggestionService) {
+    public SuggestionController(SuggestionService suggestionService) {
         this.suggestionService = suggestionService;
     }
 
@@ -40,5 +40,10 @@ public class BestwatchController {
     @PostMapping
     public void addSuggestion(@RequestBody SuggestionDto suggestion) {
         suggestionService.addSuggestion(suggestion);
+    }
+
+    @PostMapping("/many")
+    public void addSuggestions(@RequestBody AddSuggestionsDto addSuggestionsDto) {
+        suggestionService.addManySuggestions(addSuggestionsDto);
     }
 }
